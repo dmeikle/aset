@@ -21,6 +21,10 @@ use Gossamer\Aset\Casting\ParamTypeCaster;
 use Gossamer\Aset\Exceptions\UriMismatchException;
 use Gossamer\Aset\Utils\UriParser;
 
+/**
+ * Class RequestParameters
+ * @package Gossamer\Aset\Http
+ */
 class RequestParameters
 {
 
@@ -61,7 +65,7 @@ class RequestParameters
     private function formatParameters(array $params) {
         $retval = array();
         $caster = new ParamTypeCaster();
-      
+
         foreach($this->parameters as $parameter) {
             $retval[$parameter['key']] = $caster->cast($parameter, array_shift($params));
         }
