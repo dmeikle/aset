@@ -1,0 +1,13 @@
+.idea
+.idea/*
+
+.sass-cache
+.Trash-1000
+nbproject/*
+
+
+composer.lock
+
+documentation
+
+vendor
