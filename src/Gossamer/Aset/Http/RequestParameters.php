@@ -17,6 +17,10 @@
 namespace Gossamer\Aset\Http;
 
 
+use Gossamer\Aset\Casting\ParamTypeCaster;
+use Gossamer\Aset\Exceptions\UriMismatchException;
+use Gossamer\Aset\Utils\UriParser;
+
 class RequestParameters
 {
 
@@ -33,23 +37,53 @@ class RequestParameters
     }
 
     /**
-     *
+     * @return array
      */
     public function getURIParameters()
     {
-
-    }
-
-    private function getParametersFromConfig()
-    {
-        if (!array_key_exists('parameters', $this->config)) {
+        if (array_key_exists('parameters', $this->config)) {
             $this->parameters = $this->config['parameters'];
-            $this->formatParameters();
+            try{
+                $params = $this->parseParameters();
+
+                return $this->formatParameters($params);
+            }catch(\Exception $e){
+                throw new UriMismatchException();
+            }
+
         }
     }
 
-    private function formatParameters()
+    /**
+     * @param array $params
+     * @return array
+     */
+    private function formatParameters(array $params) {
+        $retval = array();
+        $caster = new ParamTypeCaster();
+      
+        foreach($this->parameters as $parameter) {
+            $retval[$parameter['key']] = $caster->cast($parameter, array_shift($params));
+        }
+
+        return $retval;
+    }
+
+    /**
+     * @return array
+     */
+    private function parseParameters()
     {
-        print_r($this->parameters);
+
+        $parser = new UriParser();
+        
+        return $parser->getParameterIndexes($this->uri, $this->config['pattern']);
+    }
+
+    /**
+     * @return string
+     */
+    public function getUri() {
+        return $this->uri;
     }
 }

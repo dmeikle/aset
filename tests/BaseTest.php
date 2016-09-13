@@ -14,8 +14,6 @@
  * Time: 11:57 AM
  */
 
-<?php
-
 namespace tests;
 
 use Monolog\Logger;

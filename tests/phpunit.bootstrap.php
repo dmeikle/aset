@@ -13,7 +13,7 @@
  * Date: 9/13/2016
  * Time: 12:00 PM
  */
-<?php
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
