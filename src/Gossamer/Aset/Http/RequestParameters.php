@@ -37,10 +37,11 @@ class RequestParameters
 
     private $postedParameters;
 
-    public function __construct($uri, array $config)
+    public function __construct($uri, array $config, array $post = null)
     {
         $this->uri = $uri;
         $this->config = $config;
+        $this->postedParameters = $post;
     }
 
     /**
@@ -70,7 +71,13 @@ class RequestParameters
         $caster = new ParamTypeCaster();
 
         foreach($this->parameters as $parameter) {
-            $retval[$parameter['key']] = $caster->cast($parameter, array_shift($params));
+            $key = array_key_exists('keyAs', $parameter) ? $parameter['keyAs'] : $parameter['key'];
+            if(array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
+
+                $retval[$key] = $caster->cast($parameter, $this->postedParameters[$parameter['key']]);
+            } else {
+                $retval[$key] = $caster->cast($parameter, array_shift($params));
+            }
         }
 
         return $retval;

@@ -20,11 +20,11 @@ namespace tests\Gossamer\Aset\Http;
 use Gossamer\Aset\Exceptions\UriMismatchException;
 use Gossamer\Aset\Http\RequestParameters;
 
-class RequestParametersTest extends \tests\BaseTest
+class RequestPostedParametersTest extends \tests\BaseTest
 {
 
     public function testBasicRouting() {
-        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getConfig());
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getConfig(), $this->getPost());
 
         $result = $params->getURIParameters();
 
@@ -33,15 +33,21 @@ class RequestParametersTest extends \tests\BaseTest
     }
 
     public function testInvalidUri() {
-        $params = new RequestParameters('/members/A0001/REC1234', $this->getConfig());
+        $params = new RequestParameters('/members/A0001/REC1234', $this->getConfig(), $this->getPost());
         try{
             $result = $params->getURIParameters();
             $this->fail('Test for invalid Uri should have failed');
         }catch(UriMismatchException $e) {
-          
+
             $this->assertTrue($e->getCode() == 425);
         }
 
+    }
+
+    private function getPost() {
+        return array(
+            'receipt_id' => 'W29-0085'
+        );
     }
 
     private function getConfig() {
@@ -49,8 +55,9 @@ class RequestParametersTest extends \tests\BaseTest
             'pattern'=> 'members/*/receipts/*',
             'parameters' =>
             array(
-                array('index'=>'0','key' => 'memberId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
-                array('index'=>'1','key' => 'receiptId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~')
+                array('key' => 'memberId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
+                array('key' => 'extraId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
+                array('key' => 'receipt_id', 'type'=> 'string', 'mask'=> '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post')
             )
         );
     }
