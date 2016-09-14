@@ -18,6 +18,7 @@ namespace Gossamer\Aset\Http;
 
 
 use Gossamer\Aset\Casting\ParamTypeCaster;
+use Gossamer\Aset\Exceptions\ParameterNotFoundException;
 use Gossamer\Aset\Exceptions\UriMismatchException;
 use Gossamer\Aset\Utils\UriParser;
 
@@ -33,6 +34,8 @@ class RequestParameters
     private $config;
 
     private $parameters;
+
+    private $postedParameters;
 
     public function __construct($uri, array $config)
     {
@@ -89,5 +92,17 @@ class RequestParameters
      */
     public function getUri() {
         return $this->uri;
+    }
+
+    public function setPostedParameters(array $params) {
+        $this->postedParameters = $params;
+    }
+    
+    public function getPostedParameter($key) {
+        if(!array_key_exists($key, $this->postedParameters)) {
+            throw new ParameterNotFoundException($key . ' does not exist in posted form');
+        }
+        
+        return $this->postedParameters[$key];
     }
 }
