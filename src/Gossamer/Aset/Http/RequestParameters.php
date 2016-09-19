@@ -73,6 +73,9 @@ class RequestParameters
         foreach($this->parameters as $parameter) {
             $key = array_key_exists('keyAs', $parameter) ? $parameter['keyAs'] : $parameter['key'];
             if(array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
+                if(!array_key_exists($key, $parameter)) {
+                    throw new ParameterNotFoundException($key . ' does not exist in parameter list');
+                }
                 if(!array_key_exists($parameter[$key], $this->postedParameters)) {
                     throw new ParameterNotFoundException($parameter[$key] . ' does not exist in posted form');
                 }
