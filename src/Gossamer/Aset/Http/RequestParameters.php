@@ -51,10 +51,12 @@ class RequestParameters
     {
         if (array_key_exists('parameters', $this->config)) {
             $this->parameters = $this->config['parameters'];
-            try{
+            try {
                 $params = $this->parseParameters();
 
                 return $this->formatParameters($params);
+            }catch(ParameterNotFoundException $e) {
+                throw $e;
             }catch(\Exception $e){
                 throw new UriMismatchException();
             }
