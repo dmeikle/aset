@@ -73,8 +73,8 @@ class RequestParameters
         foreach($this->parameters as $parameter) {
             $key = array_key_exists('keyAs', $parameter) ? $parameter['keyAs'] : $parameter['key'];
             if(array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
-
-                $retval[$key] = $caster->cast($parameter, $this->postedParameters[$parameter['key']]);
+                $required = (array_key_exists('required', $parameter) && $parameter['required'] == 'true');
+                $retval[$key] = $caster->cast($parameter, $this->postedParameters[$parameter['key']], $required);
             } else {
                 $retval[$key] = $caster->cast($parameter, array_shift($params));
             }
@@ -105,9 +105,13 @@ class RequestParameters
         $this->postedParameters = $params;
     }
     
-    public function getPostedParameter($key) {
+    public function getPostedParameter($key, $required) {
         if(!array_key_exists($key, $this->postedParameters)) {
-            throw new ParameterNotFoundException($key . ' does not exist in posted form');
+            if($required) {
+                throw new ParameterNotFoundException($key . ' does not exist in posted form');
+            }
+            
+            return;
         }
         
         return $this->postedParameters[$key];

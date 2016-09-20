@@ -44,6 +44,16 @@ class RequestPostedParametersTest extends \tests\BaseTest
 
     }
 
+    public function testRequiredField() {
+       
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getRequiredConfig(), $this->getPost());
+
+        $result = $params->getURIParameters();
+
+        $this->assertTrue(array_key_exists('memberId', $result));
+        $this->assertEquals($result['memberId'], 'A0001');
+    }
+
     private function getPost() {
         return array(
             'receipt_id' => 'W29-0085'
@@ -59,6 +69,19 @@ class RequestPostedParametersTest extends \tests\BaseTest
                 array('key' => 'extraId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
                 array('key' => 'receipt_id', 'type'=> 'string', 'mask'=> '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post')
             )
+        );
+    }
+
+    private function getRequiredConfig() {
+        return array(
+            'pattern'=> 'members/*/receipts/*',
+            'parameters' =>
+                array(
+                    array('key' => 'memberId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
+                    array('key' => 'extraId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
+                    array('key' => 'receipt_id', 'type'=> 'string', 'mask'=> '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post'),
+                    array('key' => 'requiredItem', 'type'=> 'string', 'mask'=> '~[^a-z\-A-Z0-9]+~', 'method' => 'post', 'required'=>'true')
+                )
         );
     }
 }
