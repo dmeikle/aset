@@ -51,11 +51,13 @@ class RequestParameters
     {
         if (array_key_exists('parameters', $this->config)) {
             $this->parameters = $this->config['parameters'];
-            try{
+            try {
                 $params = $this->parseParameters();
 
                 return $this->formatParameters($params);
-            }catch(\Exception $e){
+            } catch (ParameterNotFoundException $e) {
+                throw $e;
+            } catch (\Exception $e) {
                 throw new UriMismatchException();
             }
 
@@ -66,15 +68,25 @@ class RequestParameters
      * @param array $params
      * @return array
      */
-    private function formatParameters(array $params) {
+    private function formatParameters(array $params)
+    {
         $retval = array();
         $caster = new ParamTypeCaster();
 
-        foreach($this->parameters as $parameter) {
+        foreach ($this->parameters as $parameter) {
             $key = array_key_exists('keyAs', $parameter) ? $parameter['keyAs'] : $parameter['key'];
-            if(array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
-                $required = (array_key_exists('required', $parameter) && $parameter['required'] == 'true');
-                $retval[$key] = $caster->cast($parameter, $this->postedParameters[$parameter['key']], $required);
+            if (array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
+
+                $required = (array_key_exists('optional', $parameter) && $parameter['optional'] == 'false');
+                if (!array_key_exists($parameter['key'], $this->postedParameters)) {
+                    if ($required) {
+                        throw new ParameterNotFoundException($parameter['key']);
+                    }
+                    $retval[$key] = '';
+                } else {
+                    $retval[$key] = $caster->cast($parameter, $this->postedParameters[$parameter['key']]);
+                }
+
             } else {
                 $retval[$key] = $caster->cast($parameter, array_shift($params));
             }
@@ -90,30 +102,33 @@ class RequestParameters
     {
 
         $parser = new UriParser();
-        
+
         return $parser->getParameterIndexes($this->uri, $this->config['pattern']);
     }
 
     /**
      * @return string
      */
-    public function getUri() {
+    public function getUri()
+    {
         return $this->uri;
     }
 
-    public function setPostedParameters(array $params) {
+    public function setPostedParameters(array $params)
+    {
         $this->postedParameters = $params;
     }
-    
-    public function getPostedParameter($key, $required) {
-        if(!array_key_exists($key, $this->postedParameters)) {
-            if($required) {
+
+    public function getPostedParameter($key, $required)
+    {
+        if (!array_key_exists($key, $this->postedParameters)) {
+            if ($required) {
                 throw new ParameterNotFoundException($key . ' does not exist in posted form');
             }
-            
+
             return;
         }
-        
+
         return $this->postedParameters[$key];
     }
 }
