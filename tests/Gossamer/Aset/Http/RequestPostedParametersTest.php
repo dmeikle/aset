@@ -66,9 +66,10 @@ class RequestPostedParametersTest extends \tests\BaseTest
             $result = $params->getURIParameters();
 
         } catch (\Exception $e) {
+            echo $e->getMessage();
            $this->fail('Optional field should have been acceptable');
         }
-        
+
         $this->assertTrue(array_key_exists('memberId', $result));
 
     }
@@ -116,7 +117,7 @@ class RequestPostedParametersTest extends \tests\BaseTest
                     array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
                     array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
                     array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post'),
-                    array('key' => 'requiredItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'method' => 'post')
+                    array('key' => 'optionalItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'method' => 'post', 'optional' => 'true' )
                 )
         );
     }

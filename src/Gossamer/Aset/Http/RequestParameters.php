@@ -77,7 +77,8 @@ class RequestParameters
             $key = array_key_exists('keyAs', $parameter) ? $parameter['keyAs'] : $parameter['key'];
             if (array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
 
-                $required = (array_key_exists('optional', $parameter) && $parameter['optional'] == 'false');
+                $required = !(array_key_exists('optional', $parameter) && $parameter['optional'] == 'true');
+             
                 if (!array_key_exists($parameter['key'], $this->postedParameters)) {
                     if ($required) {
                         throw new ParameterNotFoundException($parameter['key']);
