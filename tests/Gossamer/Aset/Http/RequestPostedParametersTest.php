@@ -59,7 +59,6 @@ class RequestPostedParametersTest extends \tests\BaseTest
 
     public function testMissingOptionalField()
     {
-
         $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getOptionalConfig(), $this->getPost());
         $result = array();
         try {
@@ -67,12 +66,13 @@ class RequestPostedParametersTest extends \tests\BaseTest
 
         } catch (\Exception $e) {
             echo $e->getMessage();
-           $this->fail('Optional field should have been acceptable');
+            $this->fail('Optional field should have been acceptable');
         }
 
         $this->assertTrue(array_key_exists('memberId', $result));
 
     }
+
 
     private function getPost()
     {
@@ -117,8 +117,10 @@ class RequestPostedParametersTest extends \tests\BaseTest
                     array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
                     array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
                     array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post'),
-                    array('key' => 'optionalItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'method' => 'post', 'optional' => 'true' )
+                    array('key' => 'optionalItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'method' => 'post', 'optional' => 'true')
                 )
         );
     }
+
+
 }

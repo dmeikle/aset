@@ -78,7 +78,7 @@ class RequestParameters
             if (array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
 
                 $required = !(array_key_exists('optional', $parameter) && $parameter['optional'] == 'true');
-             
+
                 if (!array_key_exists($parameter['key'], $this->postedParameters)) {
                     if ($required) {
                         throw new ParameterNotFoundException($parameter['key']);
@@ -101,9 +101,11 @@ class RequestParameters
      */
     private function parseParameters()
     {
-
         $parser = new UriParser();
-
+        if(array_key_exists('uri', $this->config)) {
+            $parser->getParameterIndexes($this->uri, $this->config['uri']);
+        }
+         
         return $parser->getParameterIndexes($this->uri, $this->config['pattern']);
     }
 
