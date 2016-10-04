@@ -103,9 +103,9 @@ class RequestParameters
     {
         $parser = new UriParser();
         if(array_key_exists('uri', $this->config)) {
-            $parser->getParameterIndexes($this->uri, $this->config['uri']);
+            return $parser->getParameterIndexes($this->uri, $this->config['uri']);
         }
-         
+
         return $parser->getParameterIndexes($this->uri, $this->config['pattern']);
     }
 
