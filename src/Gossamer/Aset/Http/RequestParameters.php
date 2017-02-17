@@ -134,4 +134,8 @@ class RequestParameters
 
         return $this->postedParameters[$key];
     }
+
+    public function getPost() {
+        return $this->postedParameters;
+    }
 }
