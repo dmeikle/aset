@@ -50,15 +50,21 @@ class RequestParameters
     public function getURIParameters()
     {
         print_r($this->config);
+        $pessimistic = (array_key_exists('pessimistic', $this->config) && $this->config['pessimistic'] == 'true');
         if (array_key_exists('parameters', $this->config)) {
             $this->parameters = $this->config['parameters'];
             try {
                 $params = $this->parseParameters();
-print_r($params);
+                
+                if($pessimistic) {
+                    return $this->formatParametersPessimistic($params);
+                }
+                
                 return $this->formatParameters($params);
             } catch (ParameterNotFoundException $e) {
                 throw $e;
             } catch (\Exception $e) {
+                die($e->getTrace());
                 throw new UriMismatchException();
             }
 
@@ -84,16 +90,52 @@ print_r($params);
         }
 
     }
+    
+    private function formatParameters(array $params) {
+        $retval = array();
+        $caster = new ParamTypeCaster();
+        
+        //first go through the posted params and see what we DO have
+        foreach($this->postedParameters as $postedKey => $postedParameter) {
+            if(array_key_exists($postedKey, $this->parameters)) {
+                $key = array_key_exists('keyAs', $this->parameters[$postedKey]) ? $this->parameters[$postedKey]['keyAs'] : $this->parameters[$postedKey]['key'];                
+                $retval[$key] = $caster->cast($this->parameters[$postedKey], $postedParameter);     
+            }            
+        }
+        die('here');
+        //now find if there are any required ones we did not receive
+        $usedKeys = array_keys($retval);
+        $configKeys = array_column($this->parameters, 'key');
+        foreach($configKeys as $key) {
+            if(!in_array($key, $usedKeys)) {
+                $parameter = $this->getParameterByKey($key);
+                if(array_key_exists('required', $parameter) && $parameter['required'] == 'true') {
+                    throw new ParameterNotFoundException($key);
+                }
+            }
+        }
+
+        return $retval;
+    }
+
+    private function getParameterByKey($key) {
+        foreach($this->parameters as $parameter) {
+            if(array_key_exists($key, $parameter) && $parameter['key'] == $key) {
+                return $parameter;
+            }
+        }
+    }
 
     /**
      * @param array $params
      * @return array
      */
-    private function formatParameters(array $params)
+    private function formatParametersPessimistic(array $params)
     {
         $retval = array();
         $caster = new ParamTypeCaster();
-
+echo "here is params\r\n";
+        print_r($this->postedParameters);
         foreach ($this->parameters as $parameter) {
 
             $key = array_key_exists('keyAs', $parameter) ? $parameter['keyAs'] : $parameter['key'];
