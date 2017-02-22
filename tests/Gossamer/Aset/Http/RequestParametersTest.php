@@ -27,7 +27,7 @@ class RequestParametersTest extends \tests\BaseTest
         $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getConfig());
 
         $result = $params->getURIParameters();
-
+print_r($result);
         $this->assertTrue(array_key_exists('memberId', $result));
         $this->assertEquals($result['memberId'], 'A0001');
     }
@@ -49,8 +49,8 @@ class RequestParametersTest extends \tests\BaseTest
             'pattern'=> 'members/*/receipts/*',
             'parameters' =>
             array(
-                array('index'=>'0','key' => 'memberId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
-                array('index'=>'1','key' => 'receiptId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~')
+                array('index'=>'0','key' => 'memberId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
+                array('index'=>'1','key' => 'receiptId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~', 'method' => 'uri')
             )
         );
     }

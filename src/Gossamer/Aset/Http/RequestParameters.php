@@ -49,11 +49,12 @@ class RequestParameters
      */
     public function getURIParameters()
     {
+        print_r($this->config);
         if (array_key_exists('parameters', $this->config)) {
             $this->parameters = $this->config['parameters'];
             try {
                 $params = $this->parseParameters();
-
+print_r($params);
                 return $this->formatParameters($params);
             } catch (ParameterNotFoundException $e) {
                 throw $e;
@@ -96,23 +97,28 @@ class RequestParameters
         foreach ($this->parameters as $parameter) {
 
             $key = array_key_exists('keyAs', $parameter) ? $parameter['keyAs'] : $parameter['key'];
-
+echo "here is key $key\r\n";
             if (array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'post') {
-
-                $required = !(array_key_exists('optional', $parameter) && $parameter['optional'] == 'true');
+           echo "inside post\r\n";
+                //legacy system used optional param
+                //$required = !(array_key_exists('optional', $parameter) && $parameter['optional'] == 'true');
+                $required = (array_key_exists('required', $parameter) && $parameter['required'] == 'true');
 
                 if (!array_key_exists($parameter['key'], $this->postedParameters)) {
                     if ($required) {
                         throw new ParameterNotFoundException($parameter['key']);
                     }
-                    $retval[$key] = '';
+                    //$retval[$key] = '';
                 } else {
                     $retval[$key] = $caster->cast($parameter, $this->postedParameters[$parameter['key']]);
                 }
 
-            } elseif (array_key_exists('method', $parameter) && strtolower($parameter['method']) == 'get') {
-
+            } elseif (array_key_exists('method', $parameter) &&
+                (strtolower($parameter['method']) == 'get' || strtolower($parameter['method']) == 'uri')) {
+echo "ahift\r\n";
                 $retval[$key] = $caster->cast($parameter, array_shift($params));
+            } else{
+                echo "unkown method\r\n";
             }
         }
 
