@@ -36,7 +36,7 @@ abstract class AbstractParameters
         
         $this->uri = $uri;
         $this->config = $config;
-        $this->postedParameters = $post;
+        $this->postedParameters = is_null($post) ? array() : $post;
         $this->parameters = array_key_exists('parameters', $config) ? $config['parameters'] : array();
     }
 

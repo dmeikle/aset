@@ -18,7 +18,6 @@ namespace tests\Gossamer\Aset\Http;
 
 
 use Gossamer\Aset\Exceptions\ParameterNotFoundException;
-use Gossamer\Aset\Exceptions\UriMismatchException;
 use Gossamer\Aset\Http\RequestParameters;
 
 class RequestParametersTest extends \tests\BaseTest
