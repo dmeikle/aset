@@ -24,66 +24,6 @@ use Gossamer\Aset\Http\RequestParameters;
 class RequestPostedParametersTest extends \tests\BaseTest
 {
 
-//    public function testBasicRouting()
-//    {
-//        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getConfig(), $this->getPost());
-//
-//        $result = $params->getURIParameters();
-//
-//        $this->assertTrue(array_key_exists('memberId', $result));
-//        $this->assertEquals($result['memberId'], 'A0001');
-//    }
-//
-
-//
-//    public function testMissingRequiredField()
-//    {
-//
-//        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getRequiredConfig(), $this->getPost());
-//        try {
-//            $result = $params->getURIParameters();
-//        } catch (\Exception $e) {
-//            $this->assertEquals($e->getCode(), '426');
-//        }
-//
-//    }
-
-//    public function testMissingOptionalField()
-//    {
-//        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getOptionalConfig(), $this->getPost());
-//        $result = array();
-//        try {
-//            $result = $params->getURIParameters();
-//
-//            $post = $params->getPost();
-//        } catch (\Exception $e) {
-//            echo $e->getMessage();
-//            $this->fail('Optional field should have been acceptable');
-//        }
-//        echo "here is post\r\n";
-//print_r($post);
-//        echo "here is uri\r\n";
-//        print_r($result);
-//        $this->assertTrue(array_key_exists('memberId', $result));
-//
-//    }
-
-//    public function testOptionalFields()
-//    {
-//        $params = new RequestParameters('/shoppingcart/basket/add', $this->getBasketConfig(), $this->getBasketPost());
-//        $result = array();
-//        try {
-//            $result = $params->getURIParameters();
-//
-//        } catch (\Exception $e) {
-//            echo $e->getMessage();
-//            $this->fail('Optional field should have been acceptable');
-//        }
-//
-//       print_r($result);
-//
-//    }
-
     public function testURIFields()
     {
         $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getOptionalConfig(), $this->getPost());
