@@ -17,6 +17,7 @@
 namespace tests\Gossamer\Aset\Http;
 
 
+use Gossamer\Aset\Exceptions\ParameterNotFoundException;
 use Gossamer\Aset\Exceptions\UriMismatchException;
 use Gossamer\Aset\Http\RequestParameters;
 
@@ -27,9 +28,17 @@ class RequestParametersTest extends \tests\BaseTest
         $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getConfig());
 
         $result = $params->getURIParameters();
-print_r($result);
+
         $this->assertTrue(array_key_exists('memberId', $result));
         $this->assertEquals($result['memberId'], 'A0001');
+    }
+
+    public function testBasicRoutingNoConfig() {
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getConfigNoPatterns());
+
+        $result = $params->getURIParameters();
+
+        $this->assertEquals($result[0], 'A0001');
     }
 
     public function testInvalidUri() {
@@ -37,9 +46,9 @@ print_r($result);
         try{
             $result = $params->getURIParameters();
             $this->fail('Test for invalid Uri should have failed');
-        }catch(UriMismatchException $e) {
+        }catch(ParameterNotFoundException $e) {
           
-            $this->assertTrue($e->getCode() == 425);
+            $this->assertTrue($e->getCode() == 426);
         }
 
     }
@@ -49,9 +58,18 @@ print_r($result);
             'pattern'=> 'members/*/receipts/*',
             'parameters' =>
             array(
-                array('index'=>'0','key' => 'memberId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
-                array('index'=>'1','key' => 'receiptId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~', 'method' => 'uri')
+                'uri' =>
+                array(
+                    array('index'=>'0','key' => 'memberId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~'),
+                    array('index'=>'1','key' => 'receiptId', 'type'=> 'string', 'mask'=> '~[^a-zA-Z0-9]+~')
+                )
+
             )
+        );
+    }
+    private function getConfigNoPatterns() {
+        return array(
+            'pattern'=> 'members/*/receipts/*'
         );
     }
 }

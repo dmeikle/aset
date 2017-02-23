@@ -17,6 +17,7 @@
 namespace tests\Gossamer\Aset\Http;
 
 
+use Gossamer\Aset\Exceptions\ParameterNotFoundException;
 use Gossamer\Aset\Exceptions\UriMismatchException;
 use Gossamer\Aset\Http\RequestParameters;
 
@@ -33,17 +34,7 @@ class RequestPostedParametersTest extends \tests\BaseTest
 //        $this->assertEquals($result['memberId'], 'A0001');
 //    }
 //
-//    public function testInvalidUri()
-//    {
-//        $params = new RequestParameters('/members/A0001/REC1234', $this->getConfig(), $this->getPost());
-//
-//        try {
-//            $result = $params->getURIParameters();
-//            $this->fail('Test for invalid Uri should have failed');
-//        } catch (UriMismatchException $e) {
-//            $this->assertTrue($e->getCode() == 425);
-//        }
-//    }
+
 //
 //    public function testMissingRequiredField()
 //    {
@@ -56,10 +47,30 @@ class RequestPostedParametersTest extends \tests\BaseTest
 //        }
 //
 //    }
-//
+
 //    public function testMissingOptionalField()
 //    {
 //        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getOptionalConfig(), $this->getPost());
+//        $result = array();
+//        try {
+//            $result = $params->getURIParameters();
+//
+//            $post = $params->getPost();
+//        } catch (\Exception $e) {
+//            echo $e->getMessage();
+//            $this->fail('Optional field should have been acceptable');
+//        }
+//        echo "here is post\r\n";
+//print_r($post);
+//        echo "here is uri\r\n";
+//        print_r($result);
+//        $this->assertTrue(array_key_exists('memberId', $result));
+//
+//    }
+
+//    public function testOptionalFields()
+//    {
+//        $params = new RequestParameters('/shoppingcart/basket/add', $this->getBasketConfig(), $this->getBasketPost());
 //        $result = array();
 //        try {
 //            $result = $params->getURIParameters();
@@ -69,14 +80,15 @@ class RequestPostedParametersTest extends \tests\BaseTest
 //            $this->fail('Optional field should have been acceptable');
 //        }
 //
-//        $this->assertTrue(array_key_exists('memberId', $result));
+//       print_r($result);
 //
 //    }
 
-    public function testOptionalFields()
+    public function testURIFields()
     {
-        $params = new RequestParameters('/shoppingcart/basket/add', $this->getBasketConfig(), $this->getBasketPost());
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getOptionalConfig(), $this->getPost());
         $result = array();
+
         try {
             $result = $params->getURIParameters();
 
@@ -85,27 +97,103 @@ class RequestPostedParametersTest extends \tests\BaseTest
             $this->fail('Optional field should have been acceptable');
         }
 
-       print_r($result);
+        $this->assertTrue(array_key_exists('memberId', $result));
+        $this->assertEquals('A0001', $result['memberId']);
+    }
 
+    public function testInvalidUri()
+    {
+        $params = new RequestParameters('/members/A0001/REC1234', $this->getConfig(), $this->getPost());
+
+        try {
+            $params->getURIParameters();
+            $this->fail('Test for invalid Uri should have failed');
+        } catch (ParameterNotFoundException $e) {
+            $this->assertTrue($e->getCode() == 426);
+        }
+    }
+
+    public function testBasicPost()
+    {
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getConfig(), $this->getPost());
+
+        $result = $params->getPostParameters();
+
+        $this->assertTrue(array_key_exists('optionalItem', $result));
+        $this->assertEquals($result['receiptId'], 'W29-0085');
+    }
+
+    public function testBasicPostNoConfig()
+    {
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', array(), $this->getPost());
+
+        $result = $params->getPostParameters();
+
+        $this->assertTrue(array_key_exists('optionalItem', $result));
+        $this->assertEquals($result['receipt_id'], 'W29-0085');
+    }
+
+    public function testPessimisticPost()
+    {
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getPessimisticConfig(), $this->getPost());
+
+        $result = $params->getPostParameters();
+
+        $this->assertTrue(!array_key_exists('optionalItem', $result));
+        $this->assertEquals($result['receiptId'], 'W29-0085');
+    }
+
+    public function testMissingRequiredPost()
+    {
+        $params = new RequestParameters('/members/A0001/receipts/REC1234', $this->getRequiredConfig(), $this->getPost());
+        try{
+            $params->getPostParameters();
+            $this->fail('Test for missing posted param should have failed');
+        }catch(ParameterNotFoundException $e) {
+            $this->assertTrue($e->getCode() == 426);
+        }
     }
 
 
     private function getPost()
     {
         return array(
-            'receipt_id' => 'W29-0085'
+            'receipt_id' => 'W29-0085',
+            'optionalItem' => 'this is an optional item test optional'
+        );
+    }
+
+    private function getPessimisticConfig()
+    {
+        return array(
+            'pattern' => '/members/*/receipts/*',
+            'pessimistic' => 'true',
+            'parameters' =>
+                array(
+                    'uri' => array(
+                        array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
+                        array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~')
+                    ),
+                    'post' => array(
+                        array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId')
+                    )
+                )
         );
     }
 
     private function getConfig()
     {
         return array(
-            'pattern' => 'members/*/receipts/*',
+            'pattern' => '/members/*/receipts/*',
             'parameters' =>
                 array(
-                    array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
-                    array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
-                    array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post')
+                    'uri' => array(
+                        array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
+                        array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~')
+                    ),
+                    'post' => array(
+                        array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId')
+                    )
                 )
         );
     }
@@ -116,10 +204,10 @@ class RequestPostedParametersTest extends \tests\BaseTest
             'pattern' => 'members/*/receipts/*',
             'parameters' =>
                 array(
-                    array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
-                    array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
-                    array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post'),
-                    array('key' => 'requiredItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'method' => 'post', 'required' => 'true')
+                    'post' => array(
+                        array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId'),
+                        array('key' => 'requiredItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'required' => 'true')
+                    )
                 )
         );
     }
@@ -130,10 +218,15 @@ class RequestPostedParametersTest extends \tests\BaseTest
             'pattern' => 'members/*/receipts/*',
             'parameters' =>
                 array(
-                    array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
-                    array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'uri'),
-                    array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId', 'method' => 'post'),
-                    array('key' => 'optionalItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'method' => 'post', 'required' => 'false')
+                    'uri' => array(
+                        array('key' => 'memberId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
+                        array('key' => 'extraId', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~'),
+                    ),
+                    'post' => array(
+                        array('key' => 'receipt_id', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'keyAs' => 'receiptId'),
+                        array('key' => 'optionalItem', 'type' => 'string', 'mask' => '~[^a-z\-A-Z 0-9]+~', 'required' => 'false')
+                    ),
+                    'query' => array()
                 )
         );
     }
@@ -145,16 +238,17 @@ class RequestPostedParametersTest extends \tests\BaseTest
             'pessimistic' => false,
             'parameters' =>
                 array(
-                    array('key' => 'productNumber', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'post'),
+                    array('key' => 'productNumber', 'type' => 'string', 'mask' => '~[^a-zA-Z0-9]+~', 'method' => 'post', 'required' => 'true'),
                     array('key' => 'quantity', 'type' => 'int', 'method' => 'post'),
                     array('key' => 'memberID', 'type' => 'string', 'mask' => '~[^a-z\-A-Z0-9]+~', 'method' => 'post')
                 )
         );
     }
 
-    private function getBasketPost() {
+    private function getBasketPost()
+    {
         return array(
-            'productNumber' => 'test123',
+            // 'productNumber' => 'test123',
             'quantity' => '23',
             'memberID' => 'A0023',
             'extra1' => 'a1',

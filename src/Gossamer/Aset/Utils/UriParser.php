@@ -17,10 +17,13 @@
 namespace Gossamer\Aset\Utils;
 
 
+use Gossamer\Aset\Exceptions\ParameterNotFoundException;
+
 class UriParser
 {
     public function getParameterIndexes($uri, $pattern)
     {
+
         $uriChunks = explode('/', $uri);
         if ($uriChunks[0] == '') {
             array_shift($uriChunks);
@@ -33,6 +36,9 @@ class UriParser
         foreach ($patternChunks as $chunk) {
             
             if ($chunk == '*') {
+                if(!array_key_exists($index, $uriChunks)) {
+                    throw new ParameterNotFoundException("Index #$index");
+                }
                 $retval[] = $uriChunks[$index];
             }
 
